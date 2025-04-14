@@ -1,0 +1,39 @@
+#version: '3.8'
+services:
+  # Servicio para PostgreSQL
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: brainstroke
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init-db:/docker-entrypoint-initdb.d # Carpeta para scripts de inicialización
+    networks:
+      - brainstroke-network
+
+  # Servicio para la aplicación Python
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: brainstroke_app
+    ports:
+      - "8501:8501"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: brainstroke
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    networks:
+      - brainstroke-network
+
+networks:
+  brainstroke-network:
+    driver: bridge
